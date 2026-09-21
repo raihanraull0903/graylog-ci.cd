@@ -1,0 +1,354 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  background: #0f172a;
+  color: #e5e7eb;
+}
+
+.app {
+  min-height: 100vh;
+  background: #0f172a;
+}
+
+/* ============================================
+   HEADER
+============================================ */
+
+.header {
+  min-height: 80px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 18px 30px;
+
+  background: #111827;
+
+  border-bottom:
+    1px solid #334155;
+}
+
+.header h1 {
+  margin: 0;
+
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.header p {
+  margin: 5px 0 0;
+
+  color: #94a3b8;
+
+  font-size: 13px;
+}
+
+/* ============================================
+   CONNECTION STATUS
+============================================ */
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+
+  border-radius: 50%;
+}
+
+.status-dot.online {
+  background: #22c55e;
+}
+
+.status-dot.offline {
+  background: #ef4444;
+}
+
+/* ============================================
+   SUMMARY
+============================================ */
+
+.summary {
+  margin: 25px 30px;
+
+  display: flex;
+  align-items: center;
+  gap: 18px;
+
+  padding: 20px;
+
+  background: #1e293b;
+
+  border:
+    1px solid #334155;
+
+  border-radius: 8px;
+}
+
+.summary-number {
+  font-size: 40px;
+  font-weight: 700;
+
+  color: #ef4444;
+
+  min-width: 70px;
+}
+
+.summary-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.summary-subtitle {
+  margin-top: 4px;
+
+  color: #94a3b8;
+
+  font-size: 13px;
+}
+
+/* ============================================
+   CONTENT
+============================================ */
+
+.content {
+  padding: 0 30px 30px;
+}
+
+.port-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fill,
+      minmax(320px, 1fr)
+    );
+
+  gap: 15px;
+}
+
+/* ============================================
+   PORT CARD
+============================================ */
+
+.port-card {
+  background: #1e293b;
+
+  border:
+    1px solid #7f1d1d;
+
+  border-left:
+    5px solid #ef4444;
+
+  border-radius: 8px;
+
+  padding: 18px;
+
+  box-shadow:
+    0 4px 12px
+    rgba(0, 0, 0, 0.25);
+}
+
+.card-header {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-bottom: 18px;
+}
+
+.down-indicator {
+  display: inline-block;
+
+  padding:
+    5px 9px;
+
+  background: #dc2626;
+
+  color: white;
+
+  border-radius: 4px;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.5px;
+}
+
+.card-time {
+  color: #94a3b8;
+
+  font-size: 11px;
+
+  font-family:
+    monospace;
+}
+
+/* ============================================
+   FIELDS
+============================================ */
+
+.field {
+  margin-top: 13px;
+}
+
+.field-label {
+  margin-bottom: 4px;
+
+  color: #64748b;
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.8px;
+}
+
+.field-value {
+  color: #e5e7eb;
+
+  font-size: 14px;
+}
+
+.field-value.source {
+  font-weight: 700;
+}
+
+.field-value.interface {
+  font-family: monospace;
+
+  color: #f8fafc;
+}
+
+/* ============================================
+   EMPTY
+============================================ */
+
+.empty {
+  padding: 70px 20px;
+
+  text-align: center;
+
+  background: #1e293b;
+
+  border:
+    1px solid #334155;
+
+  border-radius: 8px;
+}
+
+.empty-icon {
+  width: 45px;
+  height: 45px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  margin:
+    0 auto 15px;
+
+  background: #166534;
+
+  color: #bbf7d0;
+
+  border-radius: 50%;
+
+  font-size: 24px;
+
+  font-weight: 700;
+}
+
+.empty h2 {
+  margin: 0;
+
+  font-size: 18px;
+}
+
+.empty p {
+  margin-top: 8px;
+
+  color: #94a3b8;
+
+  font-size: 13px;
+}
+
+/* ============================================
+   FOOTER
+============================================ */
+
+footer {
+  display: flex;
+
+  justify-content: center;
+
+  gap: 6px;
+
+  padding:
+    15px;
+
+  color: #64748b;
+
+  font-size: 11px;
+
+  border-top:
+    1px solid #1e293b;
+}
+
+/* ============================================
+   MOBILE
+============================================ */
+
+@media (max-width: 600px) {
+
+  .header {
+    padding: 15px;
+  }
+
+  .header h1 {
+    font-size: 18px;
+  }
+
+  .summary {
+    margin: 15px;
+  }
+
+  .content {
+    padding:
+      0 15px 20px;
+  }
+
+  .port-grid {
+    grid-template-columns:
+      1fr;
+  }
+
+}

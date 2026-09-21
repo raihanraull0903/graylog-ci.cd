@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Build
+dist/
+build/
+frontend/dist/
+
+# Local backups
+bakcup/
+*.backup
+*.backup-*
+*.fixed.patch
+
+# OS
+.DS_Store
+Thumbs.db
