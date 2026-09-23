@@ -3,23 +3,38 @@ pipeline {
 
     options {
         skipDefaultCheckout(true)
+        timestamps()
     }
 
     environment {
-        IMAGE_NAME = "graylog-alert"
+        IMAGE_NAME     = "graylog-alert"
         CONTAINER_NAME = "graylog-alert"
-        APP_PORT = "7777"
+
+        APP_PORT       = "7777"
         CONTAINER_PORT = "3001"
+
+        LIBRENMS_URL   = "https://mon.as.net.id"
+        LIBRENMS_TIMEOUT_MS = "5000"
     }
 
     stages {
 
+        // ==================================================
+        // 1. CHECKOUT SOURCE CODE
+        // ==================================================
         stage('Checkout') {
             steps {
+                echo "======================================"
+                echo "CHECKOUT SOURCE CODE"
+                echo "======================================"
+
                 checkout scm
             }
         }
 
+        // ==================================================
+        // 2. BUILD DOCKER IMAGE
+        // ==================================================
         stage('Build Docker Image') {
             steps {
                 sh '''
@@ -35,12 +50,15 @@ pipeline {
                       .
 
                     echo ""
-                    echo "Docker image berhasil dibuat:"
+                    echo "Docker images:"
                     docker images ${IMAGE_NAME}
                 '''
             }
         }
 
+        // ==================================================
+        // 3. SAVE CURRENT VERSION
+        // ==================================================
         stage('Save Current Version') {
             steps {
                 sh '''
@@ -60,7 +78,7 @@ pipeline {
 
                     else
 
-                        echo "Tidak ada container lama."
+                        echo "No existing container found."
                         echo "NONE" > previous_image.txt
 
                     fi
@@ -72,6 +90,9 @@ pipeline {
             }
         }
 
+        // ==================================================
+        // 4. STOP OLD CONTAINER
+        // ==================================================
         stage('Stop Old Container') {
             steps {
                 sh '''
@@ -85,29 +106,45 @@ pipeline {
             }
         }
 
+        // ==================================================
+        // 5. DEPLOY NEW CONTAINER
+        // ==================================================
         stage('Deploy New Container') {
             steps {
-                sh '''
-                    set -e
+                withCredentials([
+                    string(
+                        credentialsId: 'librenms-token',
+                        variable: 'LIBRENMS_TOKEN'
+                    )
+                ]) {
+                    sh '''
+                        set -e
 
-                    echo "======================================"
-                    echo "DEPLOY NEW CONTAINER"
-                    echo "======================================"
+                        echo "======================================"
+                        echo "DEPLOY NEW CONTAINER"
+                        echo "======================================"
 
-                    docker run -d \
-                      --name ${CONTAINER_NAME} \
-                      --restart unless-stopped \
-                      -p ${APP_PORT}:${CONTAINER_PORT} \
-                      -e PORT=${CONTAINER_PORT} \
-                      ${IMAGE_NAME}:${BUILD_NUMBER}
+                        docker run -d \
+                          --name ${CONTAINER_NAME} \
+                          --restart unless-stopped \
+                          -p ${APP_PORT}:${CONTAINER_PORT} \
+                          -e PORT=${CONTAINER_PORT} \
+                          -e LIBRENMS_URL="${LIBRENMS_URL}" \
+                          -e LIBRENMS_TOKEN="${LIBRENMS_TOKEN}" \
+                          -e LIBRENMS_TIMEOUT_MS="${LIBRENMS_TIMEOUT_MS}" \
+                          ${IMAGE_NAME}:${BUILD_NUMBER}
 
-                    echo ""
-                    echo "Container baru:"
-                    docker ps --filter "name=${CONTAINER_NAME}"
-                '''
+                        echo ""
+                        echo "Container:"
+                        docker ps --filter "name=${CONTAINER_NAME}"
+                    '''
+                }
             }
         }
 
+        // ==================================================
+        // 6. HEALTH CHECK
+        // ==================================================
         stage('Health Check') {
             steps {
                 script {
@@ -120,17 +157,20 @@ pipeline {
                             echo "HEALTH CHECK"
                             echo "======================================"
 
+                            echo ""
                             echo "Waiting for application..."
                             sleep 5
 
                             echo ""
-                            echo "Checking /health..."
+                            echo "Checking API health..."
+
                             curl -f \
                               --max-time 10 \
                               http://127.0.0.1:${APP_PORT}/health
 
                             echo ""
-                            echo "Checking frontend /..."
+                            echo "Checking frontend..."
+
                             curl -f \
                               --max-time 10 \
                               http://127.0.0.1:${APP_PORT}/
@@ -141,6 +181,9 @@ pipeline {
                         returnStatus: true
                     )
 
+                    // ==================================================
+                    // ROLLBACK IF HEALTH CHECK FAILS
+                    // ==================================================
                     if (healthResult != 0) {
 
                         echo "======================================"
@@ -179,6 +222,9 @@ pipeline {
                                   --restart unless-stopped \
                                   -p ${APP_PORT}:${CONTAINER_PORT} \
                                   -e PORT=${CONTAINER_PORT} \
+                                  -e LIBRENMS_URL="${LIBRENMS_URL}" \
+                                  -e LIBRENMS_TOKEN="${LIBRENMS_TOKEN}" \
+                                  -e LIBRENMS_TIMEOUT_MS="${LIBRENMS_TIMEOUT_MS}" \
                                   ${PREVIOUS_IMAGE}
 
                                 echo ""
@@ -186,7 +232,7 @@ pipeline {
                                 sleep 5
 
                                 echo ""
-                                echo "Checking rollback /health..."
+                                echo "Checking rollback API..."
 
                                 curl -f \
                                   --max-time 10 \
@@ -207,8 +253,8 @@ pipeline {
                             else
 
                                 echo ""
-                                echo "Tidak ada previous image."
-                                echo "Rollback tidak dapat dilakukan."
+                                echo "No previous image available."
+                                echo "Rollback cannot be performed."
 
                                 exit 1
 
@@ -227,9 +273,14 @@ pipeline {
             }
         }
 
+        // ==================================================
+        // 7. VERIFY DEPLOYMENT
+        // ==================================================
         stage('Deployment Verification') {
             steps {
                 sh '''
+                    set -e
+
                     echo "======================================"
                     echo "DEPLOYMENT VERIFICATION"
                     echo "======================================"
@@ -240,19 +291,28 @@ pipeline {
 
                     echo ""
                     echo "Application health:"
-                    curl -f http://127.0.0.1:${APP_PORT}/health
+                    curl -f \
+                      --max-time 10 \
+                      http://127.0.0.1:${APP_PORT}/health
 
                     echo ""
                     echo "Frontend:"
-                    curl -f http://127.0.0.1:${APP_PORT}/
+                    curl -f \
+                      --max-time 10 \
+                      http://127.0.0.1:${APP_PORT}/
 
                     echo ""
-                    echo "Deployment successful!"
+                    echo "======================================"
+                    echo "DEPLOYMENT SUCCESSFUL"
+                    echo "======================================"
                 '''
             }
         }
     }
 
+    // ==================================================
+    // POST ACTIONS
+    // ==================================================
     post {
 
         success {
@@ -270,8 +330,21 @@ pipeline {
             echo "======================================"
             echo "DEPLOYMENT FAILED"
             echo "======================================"
-            echo "Check Jenkins console output."
+            echo "Check Jenkins Console Output."
             echo "======================================"
+        }
+
+        always {
+            sh '''
+                echo ""
+                echo "======================================"
+                echo "DOCKER STATUS"
+                echo "======================================"
+
+                docker ps -a --filter "name=${CONTAINER_NAME}" || true
+            '''
+
+            rm -f previous_image.txt || true
         }
     }
 }
