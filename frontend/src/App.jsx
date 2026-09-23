@@ -237,7 +237,7 @@ export default function App() {
             {connected ? "Connected" : "Disconnected"}
           </span>
           <span className="header-updated">
-            Updated {formatClockTime(new Date(now))}
+            Last updated {formatClockTime(new Date(now))}
           </span>
         </div>
       </header>
