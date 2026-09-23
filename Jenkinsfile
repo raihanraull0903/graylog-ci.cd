@@ -342,9 +342,11 @@ pipeline {
                 echo "======================================"
 
                 docker ps -a --filter "name=${CONTAINER_NAME}" || true
-            '''
+                
+                 rm -f previous_image.txt || true
 
-            rm -f previous_image.txt || true
+           '''
+
         }
     }
 }
