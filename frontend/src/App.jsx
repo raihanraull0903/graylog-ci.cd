@@ -5,7 +5,7 @@ import "./App.css";
 // ============================================
 // CONFIG
 // ============================================
-const BACKEND = "http://127.0.0.1:7777";
+const BACKEND = "http://127.0.0.1:3001";
 const HISTORY_VISIBLE_COUNT = 7;
 const CLOCK_TICK_MS = 1000;
 
