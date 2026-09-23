@@ -6,7 +6,7 @@ import "./App.css";
 // CONFIG
 // ============================================
 
-const BACKEND = "http://103.163.160.190:3001";
+const BACKEND = "http://49.0.3.225:3001";
 const HISTORY_VISIBLE_COUNT = 7;
 const CLOCK_TICK_MS = 1000;
 
@@ -228,7 +228,7 @@ export default function App() {
           </span>
           <div>
             <h1>Port Alert Monitor Test</h1>
-            <p>monitored via Graylog</p>
+            <p>Monitored via Graylog | {__APP_VERSION__}</p>
           </div>
         </div>
 
@@ -237,7 +237,9 @@ export default function App() {
             <span className="status-dot" aria-hidden="true" />
             {connected ? "Connected" : "Disconnected"}
           </span>
-          <span className="header-updated">Updated {formatClockTime(lastUpdate)}</span>
+          <span className="header-updated">
+            Updated {formatClockTime(new Date(now))}
+          </span>
         </div>
       </header>
 
