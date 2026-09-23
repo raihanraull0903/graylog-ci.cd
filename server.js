@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
-
+const path = require("path");
 // ============================================
 // CONFIG
 // ============================================
@@ -31,8 +31,16 @@ const HISTORY_RETENTION_MS =
 
 const app = express();
 
+const frontendPath = path.join(
+ __dirname,
+ "frontend",
+ "dist"
+);
+
 app.use(cors({ origin: "*" }));
 
+// Serve React/Vite frontend
+app.use(express.static(frontendPath));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.text({
   type: ["text/*", "application/*"],
@@ -1142,6 +1150,19 @@ app.post("/test/port-up", (req, res) => {
     history: getPortHistory(),
   });
 });
+
+// ============================================
+// REACT FRONTEND FALLBACK
+// ============================================
+
+// Semua route yang bukan API akan diarahkan
+// ke React index.html.
+app.get("/{*splat}", (req, res) => {
+  res.sendFile(
+    path.join(frontendPath, "index.html")
+  );
+});
+
 
 // ============================================
 // HISTORY CLEANUP
